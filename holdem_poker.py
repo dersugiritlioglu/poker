@@ -75,6 +75,7 @@ def isStraightFlush(hand):
 		arr[i][1] = hand[i][1]
 	np.max(arr, axis=1)
 	#INCOMPLETE
+	# try
 	return True
 	
 def isFourOfaKind(hand):
