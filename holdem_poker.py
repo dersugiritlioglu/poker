@@ -36,9 +36,9 @@ class Player:
 		"""
 		
 		def type(self):
-		"""
-		Lower the priority, more likely to win
-		"""
+			"""
+			Lower the priority, more likely to win
+			"""
 			if isStraightFlush(self):
 				priority = 1
 			elif isFourOfaKind(self):
@@ -57,7 +57,7 @@ class Player:
 				priority = 8
 			elif isHighCard(self):
 				priority = 9
-			else
+			else:
 				print ("ERROR in hand type")
 				return -1
 			return priority
@@ -65,19 +65,42 @@ class Player:
 #def most_common(lst):
 #    return max(set(lst), key=lst.count)
 
+def most_occuring(hand):
+	# hand = 7x2
+	return np.bincount(hand)
+
 			
 def isStraightFlush(hand):
-	# hand will be given as a list, 7 as length
-	len = len(hand)
-	arr = np.zeros([7,2])
-	for i in range(len):
-		arr[i][0] = hand[i][0]
-		arr[i][1] = hand[i][1]
-	np.max(arr, axis=1)
-	#INCOMPLETE
-	# try
-	return True
-	
+
+	hand_t = hand.transpose()
+	most_type_arr = most_occuring(hand_t[0])
+	most_type = most_type_arr.argmax()
+	most_number_arr = most_occuring(hand_t[1])
+	most_number = most_number_arr.argmax()
+	if(most_type_arr[most_type] < 5):
+		return False
+	else:
+		indices = np.where(hand_t[0] == most_type)
+		new = np.zeros(5)
+		for i in range(5):
+			new[i] = hand_t[1][indices[0][i]]
+		new.sort()
+		for i in range(4):
+			if new[i+1]-new[i] != 1:
+				return False
+		return True
+
+		
+#most_number_arr[most_number] < 5
+# hand will be given as a list, 7 as length
+#len = len(hand)
+#arr = np.zeros([7,2])
+#for i in range(len):
+#	arr[i][0] = hand[i][0]
+#	arr[i][1] = hand[i][1]
+#arr_t = arr.transpose()
+
+
 def isFourOfaKind(hand):
 	return True
 	
@@ -118,7 +141,7 @@ def shuffle(cards):
 	#print (cards)
 	refresh_index_list(index_list)
 	
-def hand_comparison(hand1, hand2)
+def hand_comparison(hand1, hand2):
 		
 	
 	return hand1
