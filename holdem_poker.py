@@ -98,6 +98,26 @@ def most_occuring(hand):
 	# hand = 7x2
 	return np.bincount(hand)
 
+def create_type_list(hand):
+	types_list = []
+	for i in range(14):
+		types_list.append(0)
+	for i in range(7):
+		if types_list[hand[i][1]] == 0 :
+			types_list[hand[i][1]] = hand[i][0]
+		elif type(types_list[hand[i][1]]) == tuple:
+			length = len(types_list[hand[i][1]])
+			#initialize tpl
+			tpl = (types_list[hand[i][1]][0],)
+			for j in range(1,length):
+				tpl = (tpl, types_list[hand[i][1]][j])
+			types_list[hand[i][0]] = tpl
+		else:
+			# only 1 item
+			types_list[hand[i][1]] = (types_list[hand[i][1]], hand[i][0])
+	return types_list
+			
+
 			
 def isStraightFlush(hand):
 	# given hand should be in 7x2 order
@@ -109,7 +129,7 @@ def isStraightFlush(hand):
 	
 	# Special case for ace
 	# Only need to consider 10-J-Q-K-A
-	if len(most_number_arr) == 13 and most_type_arr[most_type] > 4:
+	if len(most_number_arr) == 14 and most_type_arr[most_type] > 4:
 		if most_number_arr[0] and most_number_arr[9] and most_number_arr[10] and most_number_arr[11] and most_number_arr[12]:
 			fromaceindices = np.where(hand[:,0]==most_type)[0]
 			if 1 in hand[fromaceindices,1] and 9 in hand[fromaceindices,1] and 10 in hand[fromaceindices,1] and 11 in hand[fromaceindices,1] and 12 in hand[fromaceindices,1]:
@@ -137,7 +157,7 @@ def isStraightFlush(hand):
 			if new[i+1]-new[i] != 1:
 				return False, np.inf
 		maxnum = np.max(new)
-		pri = (13- maxnum) * 4 + (most_type-1)
+		pri = (14- maxnum) * 4 + (most_type-1)
 		return True, pri
 
 		
@@ -157,12 +177,13 @@ def isFourOfaKind(hand):
 	most_type = most_type_arr.argmax()
 	most_number_arr = most_occuring(hand_t[1])
 	most_number = most_number_arr.argmax()
+	type_list = create_type_list(hand)
 	
 	if np.where(most_number_arr>3)[0].shape[0]:
 		maxnum = np.max(np.where(most_number_arr>3)[0])
 		if maxnum == 1:
 			return True, 0
-		return True, 13-maxnum
+		return True, 14-maxnum
 	else:
 		return False, np.inf
 	
@@ -172,9 +193,53 @@ def isFullHouse(hand):
 	most_type = most_type_arr.argmax()
 	most_number_arr = most_occuring(hand_t[1])
 	most_number = most_number_arr.argmax()
+	type_list = create_type_list(hand)
+	
+	for i in range(14):
+		types_list.append(0)
+	for i in range(7):
+		if types_list[hand[0][1]] == 0 :
+			types_list[hand[0][1]] = hand[i][0]
+		else:
+			types_list[hand[0][1]]
 	
 	if np.where(most_number_arr>2)[0].shape[0] >= 1 and np.where(most_number_arr>1)[0].shape[0] >= 2:
-		return True
+		triplet = np.max(np.where(most_number_arr>2)[0])
+		triplet_index = np.where(most_number_arr == triplet)[0][0]
+		np.delete(most_number_arr, triplet_index)
+		doublet = np.max(np.where(most_number_arr>1)[0])
+		if triplet == 1:
+			# triplet is ace
+			innerpri_aceto2_triplet = 0
+		else:
+			innerpri_aceto2_triplet = 14-triplet
+		
+		if doublet == 1:
+			# doublet is ace
+			innerpri_aceto2_doublet =  1
+		else:
+			innerpri_aceto2_doublet = 15-triplet
+			
+		innerpri = 14*innerpri_aceto2_triplet + innerpri_aceto2_doublet
+		return True, innerpri	
+# =============================================================================
+# 		triplet_type = type_list[triplet]
+# 		doublet_type = type_list[doublet]
+# 		if 1 not in triplet_type:
+# 			triptype_pri = 3
+# 		if 2 not in triplet_type:
+# 			triptype_pri = 2
+# 		if 3 not in triplet_type:
+# 			triptype_pri = 1
+# 		if 4 not in triplet_type:
+# 			triptype_pri = 0
+# 			
+# 		if 1 in doublet_type and 2 in doublet_type:
+# 			doubtype_pri = 0
+			
+			
+			#Suite bağlı değilmiş - wikipedia
+# =============================================================================	
 	else:
 		return False, np.inf
 	
@@ -184,10 +249,24 @@ def isFlush(hand):
 	most_type = most_type_arr.argmax()
 	#most_number_arr = most_occuring(hand_t[1])
 	#most_number = most_number_arr.argmax()
+	type_list = create_type_list(hand)
+	
 	if(most_type_arr[most_type] < 5):
 		return False, np.inf
 	else:
-		return True
+		#typepri do not exist
+		flushindices = np.where(hand[:,0] == most_type)[0]
+		inter = hand[flushindices]
+		inter = np.sort(inter, axis=0)
+		shp = inter.shape[0]
+		realhand = np.zeros(5)
+		for i in range(5):
+			if inter[shp-1-i][1] == 1:
+				inter[shp-1-i][1] = 14
+			realhand[i] = 14- (inter[shp-1-i][1] - 1)
+			# -2 is just for ranging in [1,13] instead of [2,14] where ace=1, king=2, 2=13
+		pri = realhand[0]*14**4 +realhand[1]*14**3 +realhand[2]*14**2 +realhand[3]*14**1 +realhand[4] 
+		return True, pri
 	
 def isStraight(hand):
 	# given hand should be in 7x2 order
@@ -197,11 +276,11 @@ def isStraight(hand):
 	most_number_arr = most_occuring(hand_t[1])
 	most_number = most_number_arr.argmax()
 	count_straight = 0
-	print(most_number_arr)
+	type_list = create_type_list(hand)
 	
 	# Special case for ace
 	# Only need to consider 10-J-Q-K-A
-	if len(most_number_arr) == 13:
+	if len(most_number_arr) == 14:
 		if most_number_arr[0] and most_number_arr[9] and most_number_arr[10] and most_number_arr[11] and most_number_arr[12]:
 			return True
 		
@@ -231,6 +310,8 @@ def isThreeOfaKind(hand):
 	most_type = most_type_arr.argmax()
 	most_number_arr = most_occuring(hand_t[1])
 	most_number = most_number_arr.argmax()
+	type_list = create_type_list(hand)
+	
 	
 	if np.where(most_number_arr>2)[0].shape[0]:
 		return True
@@ -243,6 +324,7 @@ def isTwoPair(hand):
 	most_type = most_type_arr.argmax()
 	most_number_arr = most_occuring(hand_t[1])
 	most_number = most_number_arr.argmax()
+	type_list = create_type_list(hand)
 	
 	if np.where(most_number_arr>1)[0].shape[0] >= 2:
 		return True
@@ -255,6 +337,7 @@ def isPair(hand):
 	most_type = most_type_arr.argmax()
 	most_number_arr = most_occuring(hand_t[1])
 	most_number = most_number_arr.argmax()
+	type_list = create_type_list(hand)
 	
 	if np.where(most_number_arr>1)[0].shape[0]:
 		return True
@@ -262,10 +345,12 @@ def isPair(hand):
 		return False, np.inf
 	
 def isHighCard(hand):
+	type_list = create_type_list(hand)
+	
 	if 1 in hand[:,1]:
 		return True, 0
 	maxnum = np.max(hand[:,1])
-	return True, 13-maxnum
+	return True, 14-maxnum
 	
 	
 def refresh_index_list(index_list):
