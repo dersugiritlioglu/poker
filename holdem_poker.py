@@ -281,8 +281,8 @@ def isStraight(hand):
 	# Special case for ace
 	# Only need to consider 10-J-Q-K-A
 	if len(most_number_arr) == 14:
-		if most_number_arr[0] and most_number_arr[9] and most_number_arr[10] and most_number_arr[11] and most_number_arr[12]:
-			return True
+		if most_number_arr[0] and most_number_arr[10] and most_number_arr[11] and most_number_arr[12] and most_number_arr[13]:
+			return True, 0
 		
 	for i in range(1,len(most_number_arr)):
 		flag = most_number_arr[i]-most_number_arr[i-1]
@@ -299,7 +299,8 @@ def isStraight(hand):
 			else:
 				count_straight = 0
 		if count_straight == 5:
-			return True
+			pri = 14 - most_number_arr[i]
+			return True, pri
 		print("Turn: ", i, "  Count: ", count_straight)
 	
 	return False, np.inf
@@ -314,7 +315,17 @@ def isThreeOfaKind(hand):
 	
 	
 	if np.where(most_number_arr>2)[0].shape[0]:
-		return True
+		if most_number == 1:
+			most_number = 14
+		three_pri = 14-most_number
+		# cannot be deuce since not fullhouse
+		inter = np.where(most_number_arr<2)[0]
+		inter = np.sort(np.where(most_number_arr>0)[0])
+		length = len(inter)
+		first, second = inter[length-1], inter[length-1]
+		
+		pri = three_pri*14**2 + first*14 + second
+		return True, pri
 	else:
 		return False, np.inf
 	
@@ -327,7 +338,18 @@ def isTwoPair(hand):
 	type_list = create_type_list(hand)
 	
 	if np.where(most_number_arr>1)[0].shape[0] >= 2:
-		return True
+		deuces = np.where(most_number_arr>1)[0]
+		first, second = deuces[len(deuces) - 1] , deuces[len(deuces) - 2]
+		inter = np.sort(np.where(most_number_arr==1)[0])
+		side = inter[len(inter)-1]
+		if first ==1:
+			first = 14
+		elif second ==1:
+			second = 14
+		elif side ==1:
+			side = 14
+		pri = (14-first)*14**2 + (14-second)*14 + (14-side)
+		return True, pri
 	else:
 		return False, np.inf
 	
@@ -340,7 +362,12 @@ def isPair(hand):
 	type_list = create_type_list(hand)
 	
 	if np.where(most_number_arr>1)[0].shape[0]:
-		return True
+		pair = np.where(most_number_arr>1)[0]
+		maxnum = pair[len(pair)]
+		single= np.where(most_number_arr>1)[0]
+		one, two, three, four = single[len(single) - 1], single[len(single) - 2], single[len(single) - 3], single[len(single) - 4]
+		pri = maxnum* 14**4 + one*14**3 + two*14**2 + three*14 + four
+		return True, pri
 	else:
 		return False, np.inf
 	
