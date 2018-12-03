@@ -9,7 +9,7 @@ class Player:
 
 	decision = 'Fold'
 	
-	def __init__(self, name, money, position):
+	def __init__(self, name, position, money= 10000, playing = True):
 		self.name = name
 		self.money = money
 		self.hand = []
@@ -29,67 +29,71 @@ class Player:
 	def All_in(self):
 		self.decision = 'All in'
 		#self.money = 0
-	
-	class Hand:
-		"""
-		Hand is defined by the 2 cards in one's hand plus the table
-		"""
+	def __repr__(self):
+		return str("Name: " + self.name + "\nMoney: " + str(self.money) + "\nHand: " + self.hand + "\nPosition: " + str(self.position))
+	!!!!!
+#class Hand:
+	"""
+	Hand is defined by the 2 cards in one's hand plus the table
+	"""
+#	def __init__(self):
+#		self.hand = []
 		
-		def type(self):
-			"""
-			Lower the priority, more likely to win
-			"""
-			StraightFlush, innerpri 	= isStraightFlush(self)
-			if not StraightFlush:
-				FourOfaKind, innerpri 		= isFourOfaKind(self)
-				if not FourOfaKind:
-					FullHouse, innerpri 		= isFullHouse(self)
-					if not FullHouse:
-						Flush, innerpri 			= isFlush(self)
-						if not Flush:
-							Straight, innerpri 			= isStraight(self)
-							if not Straight:
-								ThreeOfaKind, innerpri 		= isThreeOfaKind(self)
-								if not ThreeOfaKind:
-									TwoPair, innerpri			= isTwoPair(self)
-									if not TwoPair:
-										Pair, innerpri				= isPair(self)
-										if not Pair:
-											HighCard, innerpri 			= isHighCard(self)			
+	def type(self):
+		"""
+		Lower the priority, more likely to win
+		"""
+		StraightFlush, innerpri 	= isStraightFlush(self.hand)
+		if not StraightFlush:
+			FourOfaKind, innerpri 		= isFourOfaKind(self.hand)
+			if not FourOfaKind:
+				FullHouse, innerpri 		= isFullHouse(self.hand)
+				if not FullHouse:
+					Flush, innerpri 			= isFlush(self.hand)
+					if not Flush:
+						Straight, innerpri 			= isStraight(self.hand)
+						if not Straight:
+							ThreeOfaKind, innerpri 		= isThreeOfaKind(self.hand)
+							if not ThreeOfaKind:
+								TwoPair, innerpri			= isTwoPair(self.hand)
+								if not TwoPair:
+									Pair, innerpri				= isPair(self.hand)
+									if not Pair:
+										HighCard, innerpri 			= isHighCard(self.hand)			
+		
+		if StraightFlush:
+			priority = 1
+			print(" str. flush")
+		elif FourOfaKind:
+			print(" four of a kind")
+			priority = 2
+		elif FullHouse:
+			print(" full house")
+			priority = 3
+		elif Flush:
+			print(" flush")
+			################ aynı durumda renk ve sayı büyüklüklerini check etmek
+			priority = 4
+		elif Straight:
 			
-			if StraightFlush:
-				priority = 1
-				print(" str. flush")
-			elif FourOfaKind:
-				print(" four of a kind")
-				priority = 2
-			elif FullHouse:
-				print(" full house")
-				priority = 3
-			elif Flush:
-				print(" flush")
-				################ aynı durumda renk ve sayı büyüklüklerini check etmek
-				priority = 4
-			elif Straight:
-				
-				print(" straight")
-				priority = 5
-			elif ThreeOfaKind:
-				print(" three of a kind")
-				priority = 6
-			elif TwoPair:
-				print(" two pair")
-				priority = 7
-			elif Pair:
-				print(" pair")
-				priority = 8
-			elif HighCard:
-				print("highcard ")
-				priority = 9
-			else:
-				print ("ERROR in hand type")
-				return -1
-			return priority
+			print(" straight")
+			priority = 5
+		elif ThreeOfaKind:
+			print(" three of a kind")
+			priority = 6
+		elif TwoPair:
+			print(" two pair")
+			priority = 7
+		elif Pair:
+			print(" pair")
+			priority = 8
+		elif HighCard:
+			print("highcard ")
+			priority = 9
+		else:
+			print ("ERROR in hand type")
+			return -1
+		return priority, innerpri
 
 #def most_common(lst):
 #    return max(set(lst), key=lst.count)
@@ -379,6 +383,23 @@ def isHighCard(hand):
 	maxnum = np.max(hand[:,1])
 	return True, 14-maxnum
 	
+def refresh_deck():
+	index_list = []
+	refresh_index_list(index_list)
+	#print (index_list)
+	
+	
+	
+	card_list = []
+	for i in range(1,5):
+		for j in range(1,14):
+			card_list.append((i,j))
+	
+	
+	#cards = card_list.copy()
+	cards = []
+	shuffle(cards)
+	return(cards)
 	
 def refresh_index_list(index_list):
 	for i in range(1,53):
@@ -395,9 +416,17 @@ def shuffle(cards):
 	#print (cards)
 	refresh_index_list(index_list)
 	
+def distribute_cards(cards, Players):
+	# shuffled
+	playercount = len(Players)
+	for i in range(playercount):
+		Players[i].hand.append(cards[0])
+		Players[i].hand.append(cards[playercount])
+	# Floor will be appended also
+	
 def hand_comparison(hand1, hand2):
 		
-	
+	#hand.type		
 	return hand1
 	return hand2
 	
@@ -411,37 +440,27 @@ Q = 12
 K = 13
 A = (1,14)
 
+
+
+#def main():
+
+cards = refresh_deck()
+
+players = []
+	
+#playercount = int(input("How many players? \n\n"))
+playercount = 2 # delete afterwards
+for i in range(playercount):
+	#name = input("Enter name: ")
+	name = str(i) + '. oyuncu'
+	player = Player(name, i)
+	players.append(player)
+
+distribute_cards(cards, players)
+	
 global index_list
-index_list = []
-refresh_index_list(index_list)
-#print (index_list)
-
-
 global card_list
-card_list = []
-for i in range(1,5):
-	for j in range(1,14):
-		card_list.append((i,j))
-
-
-#cards = card_list.copy()
-cards = []
-shuffle(cards)
-
-
-#cards.remove((1,1))
-#print ("cards:" , len(cards),"cardlist", len(card_list))
-
-
-
-
-
-
-
-
-
-
-
+#main()
 
 
 
