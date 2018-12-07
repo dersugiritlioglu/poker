@@ -30,8 +30,12 @@ class Player:
 		self.decision = 'All in'
 		#self.money = 0
 	def __repr__(self):
-		return str("Name: " + self.name + "\nMoney: " + str(self.money) + "\nHand: " + self.hand + "\nPosition: " + str(self.position))
-	!!!!!
+		suit1 = numtosuit(self.hand[0][0])
+		suit2 = numtosuit(self.hand[1][0])
+		num1 = numtocard(self.hand[0][1])
+		num2 = numtocard(self.hand[1][1])
+		hand = suit1 + ' ' + num1+ ', ' + suit2 + ' ' +num2 
+		return "Name: " + self.name + "\nMoney: " + str(self.money) + "\nHand: " + hand + "\nPosition: " + str(self.position)
 #class Hand:
 	"""
 	Hand is defined by the 2 cards in one's hand plus the table
@@ -98,6 +102,31 @@ class Player:
 #def most_common(lst):
 #    return max(set(lst), key=lst.count)
 
+def numtosuit(num):
+	if num == 1:
+		return 'Hearts'
+	elif num == 2:
+		return 'Spades'
+	elif num == 3:
+		return 'Diamonds'
+	elif num == 4:
+		return 'Clubs'
+	else:
+		print("ERROR in numtotype")
+		return '-1'
+
+def numtocard(num):
+	if num == 1:
+		return 'A'
+	elif num == 11:
+		return 'J'
+	elif num == 12:
+		return 'Q'
+	elif num == 13:
+		return 'K'
+	else:
+		return str(num)
+	
 def most_occuring(hand):
 	# hand = 7x2
 	return np.bincount(hand)
@@ -398,15 +427,7 @@ def refresh_deck():
 	
 	#cards = card_list.copy()
 	cards = []
-	shuffle(cards)
-	return(cards)
-	
-def refresh_index_list(index_list):
-	for i in range(1,53):
-		index_list.insert(i,i)		
-
-		
-def shuffle(cards):
+	#shuffle(cards, index_list)
 	for i in range(52):
 		random_index = random.randint(0,len(index_list)-1) 
 		cards.insert(52-len(index_list),card_list[index_list[random_index]-1])
@@ -415,14 +436,40 @@ def shuffle(cards):
 	print ("Shuffled!")
 	#print (cards)
 	refresh_index_list(index_list)
+	return(cards)
+	
+def refresh_index_list(index_list):
+	for i in range(1,53):
+		index_list.insert(i,i)		
+
+		
+# =============================================================================
+# def shuffle(cards, index_list):
+# 	for i in range(52):
+# 		random_index = random.randint(0,len(index_list)-1) 
+# 		cards.insert(52-len(index_list),card_list[index_list[random_index]-1])
+# 		index_list.remove(index_list[random_index])
+# 
+# 	print ("Shuffled!")
+# 	#print (cards)
+# 	refresh_index_list(index_list)
+# =============================================================================
 	
 def distribute_cards(cards, Players):
 	# shuffled
 	playercount = len(Players)
+	new_cards = cards.copy()
 	for i in range(playercount):
-		Players[i].hand.append(cards[0])
-		Players[i].hand.append(cards[playercount])
-	# Floor will be appended also
+		Players[i].hand.append(cards[0+i])
+		new_cards.remove(cards[0+i])
+		Players[i].hand.append(cards[playercount+i])
+		new_cards.remove(cards[playercount+i])
+	return new_cards
+	
+
+
+####### Floor will be appended also
+	
 	
 def hand_comparison(hand1, hand2):
 		
@@ -441,7 +488,8 @@ K = 13
 A = (1,14)
 
 
-
+global index_list
+global card_list
 #def main():
 
 cards = refresh_deck()
@@ -456,7 +504,7 @@ for i in range(playercount):
 	player = Player(name, i)
 	players.append(player)
 
-distribute_cards(cards, players)
+new_cards = distribute_cards(cards, players)
 	
 global index_list
 global card_list
