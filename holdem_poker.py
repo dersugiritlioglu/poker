@@ -43,27 +43,38 @@ class Player:
 #	def __init__(self):
 #		self.hand = []
 		
-	def type(self):
+	def typehand_andfloor(self, floor):
 		"""
 		Lower the priority, more likely to win
 		"""
-		StraightFlush, innerpri 	= isStraightFlush(self.hand)
+		#hand = np.zeros((2,2), dtype=int)
+		for i in range(5,7):
+			for j in range(2):
+				print("i:" , i , " j:", j)
+				floor[i][j] = self.hand[i-5][j]
+		
+
+		
+		# APPEND THE FLOOR
+		
+		
+		StraightFlush, innerpri 	= isStraightFlush(floor)
 		if not StraightFlush:
-			FourOfaKind, innerpri 		= isFourOfaKind(self.hand)
+			FourOfaKind, innerpri 		= isFourOfaKind(floor)
 			if not FourOfaKind:
-				FullHouse, innerpri 		= isFullHouse(self.hand)
+				FullHouse, innerpri 		= isFullHouse(floor)
 				if not FullHouse:
-					Flush, innerpri 			= isFlush(self.hand)
+					Flush, innerpri 			= isFlush(floor)
 					if not Flush:
-						Straight, innerpri 			= isStraight(self.hand)
+						Straight, innerpri 			= isStraight(floor)
 						if not Straight:
-							ThreeOfaKind, innerpri 		= isThreeOfaKind(self.hand)
+							ThreeOfaKind, innerpri 		= isThreeOfaKind(floor)
 							if not ThreeOfaKind:
-								TwoPair, innerpri			= isTwoPair(self.hand)
+								TwoPair, innerpri			= isTwoPair(floor)
 								if not TwoPair:
-									Pair, innerpri				= isPair(self.hand)
+									Pair, innerpri				= isPair(floor)
 									if not Pair:
-										HighCard, innerpri 			= isHighCard(self.hand)			
+										HighCard, innerpri 			= isHighCard(floor)			
 		
 		if StraightFlush:
 			priority = 1
@@ -210,7 +221,7 @@ def isFourOfaKind(hand):
 	most_type = most_type_arr.argmax()
 	most_number_arr = most_occuring(hand_t[1])
 	most_number = most_number_arr.argmax()
-	type_list = create_type_list(hand)
+	types_list = create_type_list(hand)
 	
 	if np.where(most_number_arr>3)[0].shape[0]:
 		maxnum = np.max(np.where(most_number_arr>3)[0])
@@ -226,7 +237,7 @@ def isFullHouse(hand):
 	most_type = most_type_arr.argmax()
 	most_number_arr = most_occuring(hand_t[1])
 	most_number = most_number_arr.argmax()
-	type_list = create_type_list(hand)
+	types_list = create_type_list(hand)
 	
 	for i in range(14):
 		types_list.append(0)
@@ -282,7 +293,7 @@ def isFlush(hand):
 	most_type = most_type_arr.argmax()
 	#most_number_arr = most_occuring(hand_t[1])
 	#most_number = most_number_arr.argmax()
-	type_list = create_type_list(hand)
+	types_list = create_type_list(hand)
 	
 	if(most_type_arr[most_type] < 5):
 		return False, np.inf
@@ -309,7 +320,7 @@ def isStraight(hand):
 	most_number_arr = most_occuring(hand_t[1])
 	most_number = most_number_arr.argmax()
 	count_straight = 0
-	type_list = create_type_list(hand)
+	types_list = create_type_list(hand)
 	
 	# Special case for ace
 	# Only need to consider 10-J-Q-K-A
@@ -334,7 +345,7 @@ def isStraight(hand):
 		if count_straight == 5:
 			pri = 14 - most_number_arr[i]
 			return True, pri
-		print("Turn: ", i, "  Count: ", count_straight)
+		#print("Turn: ", i, "  Count: ", count_straight)
 	
 	return False, np.inf
 	
@@ -344,7 +355,7 @@ def isThreeOfaKind(hand):
 	most_type = most_type_arr.argmax()
 	most_number_arr = most_occuring(hand_t[1])
 	most_number = most_number_arr.argmax()
-	type_list = create_type_list(hand)
+	types_list = create_type_list(hand)
 	
 	
 	if np.where(most_number_arr>2)[0].shape[0]:
@@ -368,7 +379,7 @@ def isTwoPair(hand):
 	most_type = most_type_arr.argmax()
 	most_number_arr = most_occuring(hand_t[1])
 	most_number = most_number_arr.argmax()
-	type_list = create_type_list(hand)
+	types_list = create_type_list(hand)
 	
 	if np.where(most_number_arr>1)[0].shape[0] >= 2:
 		deuces = np.where(most_number_arr>1)[0]
@@ -392,7 +403,7 @@ def isPair(hand):
 	most_type = most_type_arr.argmax()
 	most_number_arr = most_occuring(hand_t[1])
 	most_number = most_number_arr.argmax()
-	type_list = create_type_list(hand)
+	types_list = create_type_list(hand)
 	
 	if np.where(most_number_arr>1)[0].shape[0]:
 		pair = np.where(most_number_arr>1)[0]
@@ -405,7 +416,7 @@ def isPair(hand):
 		return False, np.inf
 	
 def isHighCard(hand):
-	type_list = create_type_list(hand)
+	types_list = create_type_list(hand)
 	
 	if 1 in hand[:,1]:
 		return True, 0
@@ -466,17 +477,44 @@ def distribute_cards(cards, Players):
 		new_cards.remove(cards[playercount+i])
 	return new_cards
 	
-
-
-####### Floor will be appended also
+def distribute_flop(cards, floor):
+	new_cards = cards.copy()
+	for i in range(3):
+		new_cards.remove(cards[i])
+		floor[i][0] = cards[i][0]
+		floor[i][1] = cards[i][1]
+	return new_cards
 	
+def distribute_turn(cards, floor):
+	new_cards = cards.copy()
+	new_cards.remove(cards[0])
+	floor[3][0] = cards[0][0]
+	floor[3][1] = cards[0][1]
+	return new_cards	
 	
+def distribute_river(cards, floor):
+	new_cards = cards.copy()
+	new_cards.remove(cards[0])
+	floor[4][0] = cards[0][0]
+	floor[4][1] = cards[0][1]
+	return new_cards
+		
 def hand_comparison(hand1, hand2):
 		
 	#hand.type		
 	return hand1
 	return hand2
 	
+
+
+
+###################################################################
+###################################################################
+########################     MAIN     #############################
+###################################################################
+###################################################################
+	
+
 # card values
 # 1 = kupa - hearts
 # 2 = maça - spade
@@ -504,8 +542,14 @@ for i in range(playercount):
 	player = Player(name, i)
 	players.append(player)
 
+floor = np.zeros((7,2), dtype=int)
 new_cards = distribute_cards(cards, players)
-	
+new_cards = distribute_flop(new_cards, floor)
+print(floor)
+new_cards = distribute_turn(new_cards, floor)
+print(floor)
+new_cards = distribute_river(new_cards, floor)
+print(floor)
 global index_list
 global card_list
 #main()
