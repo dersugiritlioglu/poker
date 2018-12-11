@@ -43,14 +43,14 @@ class Player:
 #	def __init__(self):
 #		self.hand = []
 		
-	def typehand_andfloor(self, floor):
+	def valuehand(self, floor):
 		"""
 		Lower the priority, more likely to win
 		"""
 		#hand = np.zeros((2,2), dtype=int)
 		for i in range(5,7):
 			for j in range(2):
-				print("i:" , i , " j:", j)
+				#print("i:" , i , " j:", j)
 				floor[i][j] = self.hand[i-5][j]
 		
 
@@ -78,35 +78,45 @@ class Player:
 		
 		if StraightFlush:
 			priority = 1
-			print(" str. flush")
+			print(" \nstr. flush")
+			#print("Floor: \n", floor)
 		elif FourOfaKind:
-			print(" four of a kind")
+			print(" \nfour of a kind")
+			#print("Floor: \n", floor)
 			priority = 2
 		elif FullHouse:
-			print(" full house")
+			print(" \nfull house")
+			#print("Floor: \n", floor)
 			priority = 3
 		elif Flush:
-			print(" flush")
+			print(" \nflush")
 			################ aynı durumda renk ve sayı büyüklüklerini check etmek
+			#print("Floor: \n", floor)
 			priority = 4
 		elif Straight:
 			
-			print(" straight")
+			print(" \nstraight")
+			#print("Floor: \n", floor)
 			priority = 5
 		elif ThreeOfaKind:
-			print(" three of a kind")
+			print(" \nthree of a kind")
+			#print("Floor: \n", floor)
 			priority = 6
 		elif TwoPair:
-			print(" two pair")
+			print(" \ntwo pair")
+			#print("Floor: \n", floor)
 			priority = 7
 		elif Pair:
-			print(" pair")
+			print(" \npair")
+			#print("Floor: \n", floor)
 			priority = 8
 		elif HighCard:
-			print("highcard ")
+			print(" \nhighcard ")
+			#print("Floor: \n", floor)
 			priority = 9
 		else:
 			print ("ERROR in hand type")
+			#print("Floor: \n", floor)
 			return -1
 		return priority, innerpri
 
@@ -248,9 +258,13 @@ def isFullHouse(hand):
 			types_list[hand[0][1]]
 	
 	if np.where(most_number_arr>2)[0].shape[0] >= 1 and np.where(most_number_arr>1)[0].shape[0] >= 2:
-		triplet = np.max(np.where(most_number_arr>2)[0])
-		triplet_index = np.where(most_number_arr == triplet)[0][0]
-		np.delete(most_number_arr, triplet_index)
+		
+		# dublette bu değişiklikler gerekebilir biraz sorunlu!!!!!
+		
+		triplet = np.max(np.where(most_number_arr>2)[0][0])
+		#triplet_index = np.where(most_number_arr == triplet)[0][0]
+		#np.delete(most_number_arr, triplet_index)
+		np.delete(most_number_arr, triplet)
 		doublet = np.max(np.where(most_number_arr>1)[0])
 		if triplet == 1:
 			# triplet is ace
@@ -264,7 +278,7 @@ def isFullHouse(hand):
 		else:
 			innerpri_aceto2_doublet = 15-triplet
 			
-		innerpri = 14*innerpri_aceto2_triplet + innerpri_aceto2_doublet
+		innerpri = 14*(14-innerpri_aceto2_triplet) + (14-innerpri_aceto2_doublet)
 		return True, innerpri	
 # =============================================================================
 # 		triplet_type = type_list[triplet]
@@ -309,7 +323,7 @@ def isFlush(hand):
 				inter[shp-1-i][1] = 14
 			realhand[i] = 14- (inter[shp-1-i][1] - 1)
 			# -2 is just for ranging in [1,13] instead of [2,14] where ace=1, king=2, 2=13
-		pri = realhand[0]*14**4 +realhand[1]*14**3 +realhand[2]*14**2 +realhand[3]*14**1 +realhand[4] 
+		pri = (14-realhand[0])*14**4 +(14-realhand[1])*14**3 +(14-realhand[2])*14**2 +(14-realhand[3])*14**1 +(14-realhand[4]) 
 		return True, pri
 	
 def isStraight(hand):
@@ -368,7 +382,7 @@ def isThreeOfaKind(hand):
 		length = len(inter)
 		first, second = inter[length-1], inter[length-1]
 		
-		pri = three_pri*14**2 + first*14 + second
+		pri = (14-three_pri)*14**2 + (14-first)*14 + (14-second)
 		return True, pri
 	else:
 		return False, np.inf
@@ -407,21 +421,33 @@ def isPair(hand):
 	
 	if np.where(most_number_arr>1)[0].shape[0]:
 		pair = np.where(most_number_arr>1)[0]
-		maxnum = pair[len(pair)]
-		single= np.where(most_number_arr>1)[0]
-		one, two, three, four = single[len(single) - 1], single[len(single) - 2], single[len(single) - 3], single[len(single) - 4]
-		pri = maxnum* 14**4 + one*14**3 + two*14**2 + three*14 + four
+		maxnum = pair[len(pair)-1]
+		single= np.where(most_number_arr>0)[0]
+		one, two, three, four = single[len(single) - 2], single[len(single) - 3], single[len(single) - 4] ,single[len(single) - 5]
+		pri = (14-maxnum)* 14**4 + (14-one)*14**3 + (14-two)*14**2 + (14-three)*14 + (14-four)
 		return True, pri
 	else:
 		return False, np.inf
 	
 def isHighCard(hand):
+	hand_t = hand.transpose()
+	most_type_arr = most_occuring(hand_t[0])
+	most_type = most_type_arr.argmax()
+	most_number_arr = most_occuring(hand_t[1])
+	most_number = most_number_arr.argmax()
 	types_list = create_type_list(hand)
 	
+	single= np.where(most_number_arr>0)[0]
+	one, two, three, four = single[len(single) - 2], single[len(single) - 3], single[len(single) - 4] ,single[len(single) - 5]
+	pri = (14-maxnum)* 14**4 + (14-one)*14**3 + (14-two)*14**2 + (14-three)*14 + (14-four)
+
 	if 1 in hand[:,1]:
-		return True, 0
+		maxnum = 14
+		pri = (14-maxnum)* 14**4 + (14-one)*14**3 + (14-two)*14**2 + (14-three)*14 + (14-four)
+		return True, pri
+
 	maxnum = np.max(hand[:,1])
-	return True, 14-maxnum
+	return True, pri
 	
 def refresh_deck():
 	index_list = []
@@ -499,13 +525,34 @@ def distribute_river(cards, floor):
 	floor[4][1] = cards[0][1]
 	return new_cards
 		
-def hand_comparison(hand1, hand2):
-		
-	#hand.type		
-	return hand1
-	return hand2
-	
+def hand_comparison(players, floor):
+	#smaller is better
+	count_players = len(players)
+	better = np.zeros(count_players)
+	for i in range(count_players):
+		for j in range(i+1, count_players):
+			firsthand = players[i].valuehand(floor)
+			secondhand = players[j].valuehand(floor)
+			if (firsthand[0]<secondhand[0]):
+				better[i] +=1
+			elif (firsthand[0]>secondhand[0]):
+				better[j] +=1
+			else: #equal
+				if (firsthand[1]<secondhand[1]):
+					better[i] +=1
+				elif (firsthand[1]>secondhand[1]):
+					better[j] +=1
+				else:
+					better[i] += 0.1 #equal totally
+	return better
 
+def printfloor(floor):
+	wri = '\n'
+	for i in range(len(floor[0:5])):
+		suit1 = numtosuit(floor[i][0])
+		num1 = numtocard(floor[i][1])
+		wri = wri + suit1 + ' ' + num1+ '\n'
+	print("\nFloor:\n" ,wri)		 
 
 
 ###################################################################
@@ -535,7 +582,7 @@ cards = refresh_deck()
 players = []
 	
 #playercount = int(input("How many players? \n\n"))
-playercount = 2 # delete afterwards
+playercount = 3 # delete afterwards
 for i in range(playercount):
 	#name = input("Enter name: ")
 	name = str(i) + '. oyuncu'
@@ -543,13 +590,21 @@ for i in range(playercount):
 	players.append(player)
 
 floor = np.zeros((7,2), dtype=int)
+
 new_cards = distribute_cards(cards, players)
+
 new_cards = distribute_flop(new_cards, floor)
-print(floor)
 new_cards = distribute_turn(new_cards, floor)
-print(floor)
 new_cards = distribute_river(new_cards, floor)
-print(floor)
+
+better = hand_comparison(players, floor)
+print("Better array: \n", better)
+printfloor(floor)
+for i in range(len(players)):
+	print("\nPlayer ", i, ": \n", players[i])
+	print("Value hand: \n" ,players[i].valuehand(floor))
+	print("*******************************************")
+
 global index_list
 global card_list
 #main()
