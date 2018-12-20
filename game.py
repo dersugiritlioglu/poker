@@ -36,7 +36,7 @@ cards = refresh_deck()
 players = []
 
 #playercount = int(input("How many players? \n\n"))
-playercount = 3 # delete afterwards
+playercount = 2 # delete afterwards
 for i in range(playercount):
 	#name = input("Enter name: ")
 	name = str(i+1) + '. oyuncu'
