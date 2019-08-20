@@ -8,6 +8,52 @@ import random
 import numpy as np
 #from player import *
 
+def betting(players, table_money):
+    if len(players)<3:
+        pass
+    else:
+        players_to_talk = len(players)
+        folded_players = 0
+        cur_player = findFirsttoTalk(players)
+        #something like a while loop
+        decision = int(input('Betting decision:\n0: Check, 1: Raise, 2: Fold'))
+        while decision!=0 and decision!=1 and decision!=2:
+            print('Enter a correct decision.')
+            decision = int(input('Betting decision:\n0: Check, 1: Raise, 2: Fold'))
+        if decision==0:
+            players_to_talk -= 1
+        elif decision==1:
+            raiseamount = int(input('How much would you like to raise?'))
+            cur_player.decreaseMoney(raiseamount)
+            table_money += raiseamount
+            players_to_talk = len(players) - 1 - folded_players
+        elif decision==2:
+            players_to_talk -= 1
+            folded_players += 1
+            cur_player.set_silent()
+            
+        #TODO: while players to talk tarzı bişeyle devam edicez, sonra init betting yapılacak
+        
+            
+        pass
+    return table_money
+
+def initial_betting(players, sb, bb):
+    # copy betting function, but deduct the initial bettings this time
+    return table_money
+
+def left_player(players, pos):    
+    # pos is the position of the main player
+    # this function returns the player on the left of the main player
+    leftpos = pos%len(players)
+    return players[leftpos]
+
+def findFirsttoTalk(players):
+    for i in range(len(players)):
+        if players[i].standing == 'bb':
+            break
+    return left_player(players, i)
+    
 def numtosuit(num):
 	if num == 1:
 		return 'Hearts'
