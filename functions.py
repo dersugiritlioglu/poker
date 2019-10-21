@@ -4,6 +4,8 @@ Created on Wed Dec 12 15:58:46 2018
 
 @author: lenovo
 """
+
+
 import random
 import numpy as np
 #from player import *
